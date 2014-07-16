@@ -48,6 +48,7 @@ if unlabeled_sample_selection:
 
     sample_idx_fn = 'labeled_sample_list.idx'
     import pickle
+
     pkl_file = open(sample_idx_fn, 'wb')
     pickle.dump(obj=indices, file=pkl_file, protocol=-2)
     pkl_file.close()
@@ -55,6 +56,7 @@ if unlabeled_sample_selection:
 else:
     sample_idx_fn = 'labeled_sample_list.idx'
     import pickle
+
     pkl_file = open(sample_idx_fn, 'rb')
     indices = pickle.load(pkl_file)
     pkl_file.close()
@@ -65,8 +67,8 @@ else:
 print('Form semi-supervised data for modeling')
 num_sample_used = len(digits.target) if num_sample_used > len(digits.target) else num_sample_used
 num_labeled_points = num_sample_used if num_labeled_points > num_sample_used else num_labeled_points
-print('Number of samples to form data: %d' % num_sample_used)
-print('Number of labeled samples in data: %d' % num_labeled_points)
+print('Samples to form data: %d labeled & %d unlabeled (%d total)'
+      % (num_labeled_points, num_sample_used - num_labeled_points, num_sample_used))
 
 data_x = digits.data[indices[:num_sample_used]]
 data_y = digits.target[indices[:num_sample_used]]
@@ -82,9 +84,8 @@ print('\n')
 
 # build label propagation model
 lp_param = dict(prop_algo='LabelSpreading', iter_num=5, gamma=0.25, max_iter=5, trace=True)
-lp_model_inst = scikit_algo.LabelPropScikit(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
-                                            param_dict=lp_param)
-lp_model = lp_model_inst.iter_label_prop
+lp_model = scikit_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
+                                              param_dict=lp_param)
 
 
 # all done

@@ -38,14 +38,13 @@ class LabelPropScikit(object):
         print('Label propagation configuration is:')
         pprint.pprint(self.prop_config)
 
-    @property
     def iter_label_prop(self):
         if self.prop_config['iter_num'] < 1:
             print('Iteration Error in iterative label propagation\n')
             return
 
         # get indices of unlabeled samples
-        unlabeled_indices = np.where(self.data_y_train == -1)  # unlabeled samples labeling with -1
+        unlabeled_indices = np.where(self.data_y_train == -1)[0]  # unlabeled samples labeling with -1
 
         # do iterative label propagation
         for i in range(self.prop_config['iter_num']):
@@ -67,12 +66,12 @@ class LabelPropScikit(object):
 
             if self.prop_config['trace']:
                 print('Iteration %i %s' % (i, 50 * '_'))
-                print("Label Spreading model: %d labeled & %d unlabeled (%d total)"
+                print('Label propagation model: %d labeled & %d unlabeled (%d total)'
                       % (len(self.data_y_train) - len(unlabeled_indices),
                       len(unlabeled_indices), len(self.data_y_train)))
 
                 print(classification_report(true_labels, predicted_labels))
-                print("Confusion matrix")
+                print('Confusion matrix')
                 print(cm)
 
             # compute the entropies of transduced label distributions
@@ -84,7 +83,7 @@ class LabelPropScikit(object):
             # keep track of indices that we get labels for
             delete_indices = np.array([])
             for index in uncertainty_index:
-                delete_index = np.where(unlabeled_indices == index)
+                delete_index = np.where(unlabeled_indices == index)[0]
                 delete_indices = np.concatenate((delete_indices, delete_index))
 
             unlabeled_indices = np.delete(unlabeled_indices, delete_indices)
@@ -92,9 +91,10 @@ class LabelPropScikit(object):
         return iter_lp_model
 
 
-def iter_label_propagation(data_x, data_y, param_dict=prop_config_defaults):
-    lp_model = LabelPropScikit(data_x=data_x, data_y=data_y, param_dict=param_dict)
-    iter_lp_model = lp_model.iter_label_prop()
+def iter_label_propagation(data_x, data_y_train, data_y_true, param_dict=prop_config_defaults):
+    lp_model_inst = LabelPropScikit(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y_true,
+                                    param_dict=param_dict)
+    iter_lp_model = lp_model_inst.iter_label_prop()
 
     return iter_lp_model
 
