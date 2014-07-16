@@ -26,9 +26,9 @@ import scikit_algo
 
 
 # parsing arguments
-unlabeled_sample_selection = False
+unlabeled_sample_selection = True
 num_sample_used = 330
-num_labeled_points = 10
+num_labeled_points = 30
 
 
 # load raw data
@@ -36,7 +36,7 @@ t_start = time()
 digits = datasets.load_digits()
 t_end = time()
 print('Data loading taking %f seconds' % (t_end - t_start))
-print('Data loaded: %d/%d with labels %d' % (digits.data.shape[0], digits.data.shape[1], len(digits.target)))
+print('Data loaded: %d / %d with labels %d' % (digits.data.shape[0], digits.data.shape[1], len(digits.target)))
 print('\n')
 
 
@@ -83,12 +83,14 @@ print('\n')
 
 
 # build label propagation model
-lp_param = dict(prop_algo='LabelSpreading', iter_num=5, gamma=0.25, max_iter=5, trace=True)
+lp_param = dict(prop_algo='LabelSpreading', iter_num=1, gamma=0.25, max_iter=5, trace=True)
+t_start = time()
 lp_model = scikit_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
                                               param_dict=lp_param)
+t_end = time()
+print('Label propagation taking %f seconds' % (t_end - t_start))
+print('\n')
 
 
 # all done
 print('----- All Done -----\n')
-
-i = 0

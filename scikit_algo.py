@@ -21,7 +21,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 # global macro
 prop_config_defaults = dict(prop_algo='LabelSpreading',  # LabelSpreading/LabelPropagation
-                            iter_num=5,  # iteration number for iterative label propagation
+                            iter_num=1,  # iteration number for iterative label propagation
                             kernel='rbf', gamma=20, n_neighbors=7, alpha=0.2, max_iter=30, tol=1e-3,
                             trace=True)
 
@@ -29,6 +29,7 @@ prop_config_defaults = dict(prop_algo='LabelSpreading',  # LabelSpreading/LabelP
 class LabelPropScikit(object):
     def __init__(self, data_x, data_y_train, data_y_true, param_dict=prop_config_defaults):
         self.data_x, self.data_y_train, self.data_y_true = data_x, data_y_train, data_y_true
+
         if (self.data_x.shape[0] != len(data_y_train)) or (len(data_y_train) != len(data_y_true)):
             print('Dimension Error in label propagation\n')
             return
@@ -37,17 +38,24 @@ class LabelPropScikit(object):
         self.prop_config.update(param_dict)
         print('Label propagation configuration is:')
         pprint.pprint(self.prop_config)
+        print('\n')
 
     def iter_label_prop(self):
         if self.prop_config['iter_num'] < 1:
             print('Iteration Error in iterative label propagation\n')
             return
 
+        iter_lp_model = None
+
         # get indices of unlabeled samples
         unlabeled_indices = np.where(self.data_y_train == -1)[0]  # unlabeled samples labeling with -1
 
         # do iterative label propagation
         for i in range(self.prop_config['iter_num']):
+            # here active learning scenario - need to re-consider!!
+            data_y_train = np.copy(self.data_y_true)
+            data_y_train[unlabeled_indices] = -1
+
             # initialize propagation model instant
             if 'LabelSpreading' == self.prop_config['prop_algo']:
                 iter_lp_model = label_propagation.LabelSpreading(gamma=self.prop_config['gamma'],
@@ -57,7 +65,7 @@ class LabelPropScikit(object):
                                                                    max_iter=self.prop_config['max_iter'])
 
             # fit propagation model
-            iter_lp_model.fit(self.data_x, self.data_y_train)
+            iter_lp_model.fit(self.data_x, data_y_train)
 
             # performance report via confusion matrix
             predicted_labels = iter_lp_model.transduction_[unlabeled_indices]
@@ -65,7 +73,7 @@ class LabelPropScikit(object):
             cm = confusion_matrix(true_labels, predicted_labels, labels=iter_lp_model.classes_)
 
             if self.prop_config['trace']:
-                print('Iteration %i %s' % (i, 50 * '_'))
+                print('Iteration %i %s' % (i, 60 * '_'))
                 print('Label propagation model: %d labeled & %d unlabeled (%d total)'
                       % (len(self.data_y_train) - len(unlabeled_indices),
                       len(unlabeled_indices), len(self.data_y_train)))
@@ -73,6 +81,7 @@ class LabelPropScikit(object):
                 print(classification_report(true_labels, predicted_labels))
                 print('Confusion matrix')
                 print(cm)
+                print('\n')
 
             # compute the entropies of transduced label distributions
             pred_entropies = stats.distributions.entropy(iter_lp_model.label_distributions_.T)
@@ -86,7 +95,7 @@ class LabelPropScikit(object):
                 delete_index = np.where(unlabeled_indices == index)[0]
                 delete_indices = np.concatenate((delete_indices, delete_index))
 
-            unlabeled_indices = np.delete(unlabeled_indices, delete_indices)
+            unlabeled_indices = np.delete(unlabeled_indices, delete_indices.astype(int))
 
         return iter_lp_model
 
