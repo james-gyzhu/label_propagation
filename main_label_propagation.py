@@ -23,12 +23,15 @@ import numpy as np
 
 from sklearn import datasets
 import scikit_algo
+import dlp
 
 
 # parsing arguments
-unlabeled_sample_selection = True
+unlabeled_sample_selection = False
 num_sample_used = 330
-num_labeled_points = 30
+num_labeled_points = 10
+
+algo_type = 'dlp'  # scikit_algo/dlp
 
 
 # load raw data
@@ -83,11 +86,23 @@ print('\n')
 
 
 # build label propagation model
-lp_param = dict(prop_algo='LabelSpreading', iter_num=1, gamma=0.25, max_iter=5, trace=True)
-t_start = time()
-lp_model = scikit_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
-                                              param_dict=lp_param)
-t_end = time()
+print('Build label propagation model')
+if 'scikit_algo' == algo_type:
+    print('Propagation algo used: %s' % 'SciKit-learn package')
+    lp_param = dict(prop_algo='LabelSpreading', iter_num=1, gamma=0.25, max_iter=5, trace=True)
+    t_start = time()
+    lp_model = scikit_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
+                                                  param_dict=lp_param)
+    t_end = time()
+elif 'dlp' == algo_type:
+    print('Propagation algo used: %s' % 'Dynamic label propagation')
+    lp_param = dict(dist_metric='euclidean', kernel='rbf', gamma=0.25, n_neighbors=7,
+                    alpha=0.05, beta=0.1, trace=True)
+    t_start = time()
+    lp_model = dlp.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
+                                          param_dict=lp_param)
+    t_end = time()
+
 print('Label propagation taking %f seconds' % (t_end - t_start))
 print('\n')
 

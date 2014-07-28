@@ -15,6 +15,7 @@ This file defines all global utility functions
 import pandas as pd
 import pandas.rpy.common as com
 import scipy.sparse as sp_sparse
+import numpy as np
 
 from sklearn import datasets
 
@@ -126,3 +127,16 @@ def convert_pframe_to_rframe(pframe):
 def is_sparse(x):
     sparse_flag = sp_sparse.issparse(x)
     return sparse_flag
+
+
+def scale_data(x, center, scale):
+    scaled_data = x
+    if center:
+        col_sum = x.sum(axis=2)
+        scaled_data = scaled_data - col_sum[:, np.newaxis]
+
+    if scale:
+        col_std = x.std(axis=2)
+        scaled_data = scaled_data / col_std[:, np.newaxis]
+
+    return scaled_data
