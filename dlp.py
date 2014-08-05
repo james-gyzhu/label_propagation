@@ -68,8 +68,9 @@ class DynamicLabelPropagation(object):
         for t in range(self.prop_config['T']):
             label_mat_tp1 = np.dot(status_mat_t, label_mat_t)
             label_mat_tp1[range(labeled_y_mat.shape[0]), range(labeled_y_mat.shape[1])] = labeled_y_mat
+
             status_mat_tp1 = np.dot(
-                np.dot(knn_mat, (status_mat + alpha * np.dot(label_mat_t, np.transpose(label_mat_t)))),
+                np.dot(knn_mat, status_mat_t + alpha * np.dot(label_mat_t, np.transpose(label_mat_t))),
                 np.transpose(knn_mat)) + beta * np.identity(status_mat_t.shape[0])
 
             label_mat_t = label_mat_tp1
