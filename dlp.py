@@ -20,7 +20,7 @@ import glb_utils
 
 # global macro
 prop_config_defaults = dict(dist_metric='euclidean', kernel='rbf', gamma=20, n_neighbors=7,
-                            T=20, alpha=0.05, beta=0.1, trace=True)
+                            dlp_T=20, alpha=0.05, beta=0.1, trace=True)
 
 
 class DynamicLabelPropagation(object):
@@ -65,7 +65,7 @@ class DynamicLabelPropagation(object):
         label_mat_t = np.concatenate((labeled_y_mat, unlabeled_y_mat), axis=0)
         status_mat_t = status_mat
 
-        for t in range(self.prop_config['T']):
+        for t in range(self.prop_config['dlp_T']):
             label_mat_tp1 = np.dot(status_mat_t, label_mat_t)
             label_mat_tp1[range(labeled_y_mat.shape[0]), range(labeled_y_mat.shape[1])] = labeled_y_mat
 
@@ -91,7 +91,7 @@ class DynamicLabelPropagation(object):
 
         # calculate transaction matrix
         if 'rbf' == self.prop_config['kernel']:
-            transition_mat = np.exp(-distance_mat ** 2)
+            transition_mat = np.exp(- distance_mat ** 2)
         else:
             print('Error in kernel metric for transition matrix calculation\n')
             return None
@@ -99,14 +99,16 @@ class DynamicLabelPropagation(object):
         return transition_mat
 
     def calc_status_mat(self, raw_mat):
-        row_sum = raw_mat.sum(axis=1)
+        row_sum = np.sum(raw_mat, axis=1)
         status_mat = raw_mat / row_sum[:, np.newaxis]
         return status_mat
 
     def calc_knn_graph(self, raw_mat):
-        sort_idx_mat = np.argsort(raw_mat, axis=1)[:, self.prop_config['n_neighbors']]
-        knn_graph_mat = np.zeros(shape=(raw_mat.shape[0], raw_mat.shape[1]))
-        knn_graph_mat[sort_idx_mat] = raw_mat[sort_idx_mat]
+        sort_idx_mat = np.argsort(raw_mat, axis=1)[:, raw_mat.shape[1]-self.prop_config['n_neighbors']:]
+        knn_graph_mat = np.zeros(shape=raw_mat.shape)
+        for i_row in range(knn_graph_mat.shape[0]):
+            knn_graph_mat[i_row, sort_idx_mat[i_row, :]] = raw_mat[i_row, sort_idx_mat[i_row, :]]
+
         return knn_graph_mat
 
 
@@ -116,3 +118,4 @@ def iter_label_propagation(data_x, data_y_train, data_y_true, param_dict=prop_co
     iter_lp_model = lp_model_inst.dynamic_label_prop()
 
     return iter_lp_model
+

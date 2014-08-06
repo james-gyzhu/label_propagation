@@ -129,14 +129,19 @@ def is_sparse(x):
     return sparse_flag
 
 
-def scale_data(x, center, scale):
+def scale_data(x, center=True, scale=True):
     scaled_data = x
     if center:
-        col_sum = x.sum(axis=2)
-        scaled_data = scaled_data - col_sum[:, np.newaxis]
+        col_ave = np.average(x, axis=0)
+        scaled_data = scaled_data - col_ave
 
     if scale:
-        col_std = x.std(axis=2)
-        scaled_data = scaled_data / col_std[:, np.newaxis]
+        col_std = np.std(x, axis=0)
+        if np.count_nonzero(col_std) != len(col_std):
+            print('Std deviation error in scale_data\n')
+            return None
+        else:
+            scaled_data = scaled_data / col_std
 
     return scaled_data
+
