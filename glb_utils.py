@@ -137,11 +137,8 @@ def scale_data(x, center=True, scale=True):
 
     if scale:
         col_std = np.std(x, axis=0)
-        if np.count_nonzero(col_std) != len(col_std):
-            print('Std deviation error in scale_data\n')
-            return None
-        else:
-            scaled_data = scaled_data / col_std
+        non_zero_std_idx = np.nonzero(col_std)[0]  # get index 0 as col_std is a vector
+        scaled_data[:, non_zero_std_idx] = scaled_data[:, non_zero_std_idx] / col_std[non_zero_std_idx]
 
     return scaled_data
 
