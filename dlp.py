@@ -14,12 +14,14 @@ Dynamic Label propagation
 # import packages
 import pprint
 from scipy.spatial.distance import *
+from sklearn.metrics import classification_report, confusion_matrix
 
 import glb_utils
 
 
 # global macro
-prop_config_defaults = dict(dist_metric='euclidean', kernel='rbf', gamma=20, n_neighbors=7,
+prop_config_defaults = dict(iter_num=1,  # iteration number for iterative label propagation
+                            dist_metric='euclidean', kernel='rbf', gamma=20, n_neighbors=7,
                             dlp_T=20, alpha=0.05, beta=0.1, trace=True)
 
 
@@ -139,11 +141,29 @@ class FormatModel(object):
 
 
 def iter_label_propagation(data_x, data_y_train, data_y_true=None, param_dict=prop_config_defaults):
-    lp_model_inst = DynamicLabelPropagation(data_x=data_x, data_y_train=data_y_train, param_dict=param_dict)
-    iter_lp_model = lp_model_inst.dynamic_label_prop()
+    iter_lp_model = None
+    for i in range(param_dict['iter_num']):
+        lp_model_inst = DynamicLabelPropagation(data_x=data_x, data_y_train=data_y_train, param_dict=param_dict)
+        iter_lp_model = lp_model_inst.dynamic_label_prop()
 
-    if not (data_y_true is None):
-        data_y_true = data_y_true[iter_lp_model.orig_sample_index_]
+        if not (data_y_true is None):
+            data_y_true = data_y_true[iter_lp_model.orig_sample_index_]
+
+            # performance report via confusion matrix
+            predicted_labels = iter_lp_model.transduction_[iter_lp_model.unlabeled_index_]
+            true_labels = data_y_true[iter_lp_model.unlabeled_index_]
+            cm = confusion_matrix(true_labels, predicted_labels, labels=iter_lp_model.classes_)
+
+            print(classification_report(true_labels, predicted_labels))
+            print('Confusion matrix')
+            print(cm)
+            print('\n')
+
+        if iter_lp_model.dlp_param_['trace']:
+            print('Iteration %i %s' % (i, 60 * '_'))
+            print('Label propagation model: %d labeled & %d unlabeled (%d total)'
+                  % (len(iter_lp_model.labeled_index_), len(iter_lp_model.unlabeled_index_),
+                     len(iter_lp_model.transduction_)))
 
     return iter_lp_model
 
