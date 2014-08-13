@@ -96,9 +96,7 @@ if 'scikit_algo' == algo_type:
     t_end = time()
 elif 'dlp' == algo_type:
     print('Propagation algo used: %s' % 'Dynamic label propagation')
-    lp_param = dict(iter_num=1,
-                    dist_metric='euclidean', kernel='rbf', gamma=0.25, n_neighbors=7, dlp_T=20, alpha=0.05, beta=0.1,
-                    trace=True)
+    lp_param = dict(iter_num=1, kernel='rbf', gamma=1, n_neighbors=7, dlp_T=20, alpha=0.05, beta=0.1, trace=True)
     t_start = time()
     lp_model = dlp.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
                                           param_dict=lp_param)
