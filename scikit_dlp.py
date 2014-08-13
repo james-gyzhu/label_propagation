@@ -1,7 +1,21 @@
 # coding=utf8
+
+__author__ = 'Guangyu Zhu'
+__copyright__ = 'Copyright (C) 2014, Solutions for Label Propagation'
+__license__ = 'Domain Upon Request'
+__maintainer__ = 'James Zhu'
+__email__ = 'zhugy.cn@gmail.com'
+
+"""
+
+Dynamic Label propagation inherit from scikit-learn algorithm
+
+"""
+
+
 """
 Label propagation in the context of this module refers to a set of
-semisupervised classification algorithms. In the high level, these algorithms
+semi-supervised classification algorithms. In the high level, these algorithms
 work by forming a fully-connected graph between all points given and solving
 for the steady-state distribution of labels at each point.
 
@@ -22,37 +36,13 @@ Label clamping:
 
 Kernel:
   A function which projects a vector into some higher dimensional space. This
-  implementation supprots RBF and KNN kernels. Using the RBF kernel generates
+  implementation supports RBF and KNN kernels. Using the RBF kernel generates
   a dense matrix of size O(N^2). KNN kernel will generate a sparse matrix of
   size O(k*N) which will run much faster. See the documentation for SVMs for
   more info on kernels.
-
-Examples
---------
->>> from sklearn import datasets
->>> from sklearn.semi_supervised import LabelPropagation
->>> label_prop_model = LabelPropagation()
->>> iris = datasets.load_iris()
->>> random_unlabeled_points = np.where(np.random.random_integers(0, 1,
-...        size=len(iris.target)))
->>> labels = np.copy(iris.target)
->>> labels[random_unlabeled_points] = -1
->>> label_prop_model.fit(iris.data, labels)
-... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-LabelPropagation(...)
-
-Notes
------
-References:
-[1] Yoshua Bengio, Olivier Delalleau, Nicolas Le Roux. In Semi-Supervised
-Learning (2006), pp. 193-216
-
-[2] Olivier Delalleau, Yoshua Bengio, Nicolas Le Roux. Efficient
-Non-Parametric Function Induction in Semi-Supervised Learning. AISTAT 2005
 """
 
-# Authors: Clay Woolam <clay@woolam.org>
-# Licence: BSD
+
 from abc import ABCMeta, abstractmethod
 from scipy import sparse
 import numpy as np
@@ -292,30 +282,6 @@ class LabelPropagation(BaseLabelPropagation):
 
     `transduction_` : array, shape = [n_samples]
         Label assigned to each item via the transduction.
-
-    Examples
-    --------
-    >>> from sklearn import datasets
-    >>> from sklearn.semi_supervised import LabelPropagation
-    >>> label_prop_model = LabelPropagation()
-    >>> iris = datasets.load_iris()
-    >>> random_unlabeled_points = np.where(np.random.random_integers(0, 1,
-    ...    size=len(iris.target)))
-    >>> labels = np.copy(iris.target)
-    >>> labels[random_unlabeled_points] = -1
-    >>> label_prop_model.fit(iris.data, labels)
-    ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-    LabelPropagation(...)
-
-    References
-    ----------
-    Xiaojin Zhu and Zoubin Ghahramani. Learning from labeled and unlabeled data
-    with label propagation. Technical Report CMU-CALD-02-107, Carnegie Mellon
-    University, 2002 http://pages.cs.wisc.edu/~jerryzhu/pub/CMU-CALD-02-107.pdf
-
-    See Also
-    --------
-    LabelSpreading : Alternate label propagation strategy more robust to noise
     """
     def _build_graph(self):
         """Matrix representing a fully connected graph between each sample
@@ -337,7 +303,7 @@ class LabelPropagation(BaseLabelPropagation):
 class LabelSpreading(BaseLabelPropagation):
     """LabelSpreading model for semi-supervised learning
 
-    This model is similar to the basic Label Propgation algorithm,
+    This model is similar to the basic Label Propagation algorithm,
     but uses affinity matrix based on the normalized graph Laplacian
     and soft clamping across the labels.
 
@@ -371,30 +337,6 @@ class LabelSpreading(BaseLabelPropagation):
 
     `transduction_` : array, shape = [n_samples]
         Label assigned to each item via the transduction.
-
-    Examples
-    --------
-    >>> from sklearn import datasets
-    >>> from sklearn.semi_supervised import LabelSpreading
-    >>> label_prop_model = LabelSpreading()
-    >>> iris = datasets.load_iris()
-    >>> random_unlabeled_points = np.where(np.random.random_integers(0, 1,
-    ...    size=len(iris.target)))
-    >>> labels = np.copy(iris.target)
-    >>> labels[random_unlabeled_points] = -1
-    >>> label_prop_model.fit(iris.data, labels)
-    ... # doctest: +NORMALIZE_WHITESPACE +ELLIPSIS
-    LabelSpreading(...)
-
-    References
-    ----------
-    Dengyong Zhou, Olivier Bousquet, Thomas Navin Lal, Jason Weston,
-    Bernhard Schoelkopf. Learning with local and global consistency (2004)
-    http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.115.3219
-
-    See Also
-    --------
-    LabelPropagation : Unregularized graph based semi-supervised learning
     """
 
     def __init__(self, kernel='rbf', gamma=20, n_neighbors=7, alpha=0.2,
