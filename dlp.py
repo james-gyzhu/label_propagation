@@ -22,7 +22,7 @@ import glb_utils
 # global macro
 prop_config_defaults = dict(iter_num=1,  # iteration number for iterative label propagation
                             kernel='rbf', gamma=20, n_neighbors=7,
-                            dlp_T=20, alpha=0.05, beta=0.1, trace=True)
+                            dlp_T=20, alpha=0.05, coef_a=0.05, coef_b=0.1, trace=True)
 
 
 class DynamicLabelPropagation(object):
@@ -45,8 +45,8 @@ class DynamicLabelPropagation(object):
         print('\n')
 
     def dynamic_label_prop(self):
-        alpha = self.prop_config['alpha']
-        beta = self.prop_config['beta']
+        coef_a = self.prop_config['coef_a']
+        coef_b = self.prop_config['coef_b']
 
         # calculate transition matrix
         transition_mat = self.calc_transition_mat()
@@ -78,8 +78,8 @@ class DynamicLabelPropagation(object):
             label_mat_tp1[range(labeled_y_mat.shape[0]), :] = labeled_y_mat
             # kernel fusion/diffusion
             status_mat_tp1 = np.dot(
-                np.dot(knn_mat, status_mat_t + alpha * np.dot(label_mat_t, np.transpose(label_mat_t))),
-                np.transpose(knn_mat)) + beta * np.identity(status_mat_t.shape[0])
+                np.dot(knn_mat, status_mat_t + coef_a * np.dot(label_mat_t, np.transpose(label_mat_t))),
+                np.transpose(knn_mat)) + coef_b * np.identity(status_mat_t.shape[0])
 
             # get back propagation matrix for next iteration
             label_mat_t = label_mat_tp1
