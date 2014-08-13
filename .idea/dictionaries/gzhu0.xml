@@ -2,8 +2,10 @@
   <dictionary name="gzhu0">
     <words>
       <w>coef</w>
+      <w>diag</w>
       <w>entropies</w>
       <w>iter</w>
+      <w>laplacian</w>
       <w>pred</w>
       <w>sklearn</w>
       <w>transduced</w>
