@@ -25,14 +25,15 @@ from sklearn import datasets
 import scikit_algo
 import scikit_dlp_algo
 import dlp
+import alp
 
 
 # parsing arguments
 unlabeled_sample_selection = False
 num_sample_used = 330
-num_labeled_points = 10
+num_labeled_points = 30
 
-algo_type = 'scikit_dlp'  # scikit_algo/dlp/scikit_dlp
+algo_type = 'alp'  # scikit_algo/dlp/scikit_dlp/alp
 
 
 # load raw data
@@ -109,6 +110,14 @@ elif 'scikit_dlp' == algo_type:
     t_start = time()
     lp_model = scikit_dlp_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
                                                       param_dict=lp_param)
+    t_end = time()
+elif 'alp' == algo_type:
+    print('Propagation algo used: %s' % 'Active label propagation')
+    lp_param = dict(prop_algo='LabelSpreading', active_iter=5, gamma=0.25, max_iter=5,
+                    n_init_samples=10, n_active_samples=5, trace=True)
+    t_start = time()
+    lp_model = alp.alp_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
+                                         param_dict=lp_param)
     t_end = time()
 
 print('Label propagation taking %f seconds' % (t_end - t_start))
