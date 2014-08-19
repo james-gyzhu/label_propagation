@@ -81,7 +81,7 @@ class ActiveLabelPropagation(object):
             cur_iter_y[used_labeled_indices] = data_y_train[used_labeled_indices]
 
             # print tracing info
-            print('Iteration %i %s' % (running_iter, 60*'_'))
+            print('Iteration %i %s' % (running_iter, 50*'_'))
             print('Label propagation model: %d labeled & %d unlabeled (%d total)'
                   % (len(used_labeled_indices), len(unlabeled_indices), len(data_y_train)))
 
@@ -107,15 +107,17 @@ class ActiveLabelPropagation(object):
             pred_entropies = stats.distributions.entropy(active_lp_model.label_distributions_.T)
 
             # select five digit examples that the classifier is most uncertain about
-            unused_labeled_indices = list(set(labeled_indices) - set(used_labeled_indices))
-            n_selected_samples = min(len(unused_labeled_indices), self.n_active_samples)
-            uncertainty_index = np.argsort(pred_entropies)[unused_labeled_indices][-n_selected_samples:]
+            unused_labeled_indices = np.array(list(set(labeled_indices) - set(used_labeled_indices)))
+            if len(unused_labeled_indices) < 1:
+                print('\nLabeled samples consumed out\n')
+                break
+            else:
+                n_selected_samples = min(len(unused_labeled_indices), self.n_active_samples)
+                uncertainty_index = np.argsort(pred_entropies[unused_labeled_indices])[-n_selected_samples:]
+                # keep track of indices that we get labels for
+                used_labeled_indices = np.concatenate((used_labeled_indices, unused_labeled_indices[uncertainty_index]))
 
-            # keep track of indices that we get labels for
-            for index in uncertainty_index:
-                add_index = np.where(labeled_indices == index)[0]
-                used_labeled_indices = np.concatenate((used_labeled_indices, add_index))
-
+            # loop iter increasing
             running_iter += 1
             print('\n')
 

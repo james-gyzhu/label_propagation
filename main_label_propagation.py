@@ -29,9 +29,9 @@ import alp
 
 
 # parsing arguments
-unlabeled_sample_selection = False
-num_sample_used = 330
-num_labeled_points = 30
+labeled_sample_selection = False
+num_sample_used = 1797
+num_labeled_points = 100
 
 algo_type = 'alp'  # scikit_algo/dlp/scikit_dlp/alp
 
@@ -46,14 +46,13 @@ print('\n')
 
 
 # select labeled samples (form index list)
-if unlabeled_sample_selection:
+if labeled_sample_selection:
     rng = np.random.RandomState(0)
     indices = np.arange(len(digits.data))
     rng.shuffle(indices)
 
     sample_idx_fn = 'labeled_sample_list.idx'
     import pickle
-
     pkl_file = open(sample_idx_fn, 'wb')
     pickle.dump(obj=indices, file=pkl_file, protocol=-2)
     pkl_file.close()
@@ -61,7 +60,6 @@ if unlabeled_sample_selection:
 else:
     sample_idx_fn = 'labeled_sample_list.idx'
     import pickle
-
     pkl_file = open(sample_idx_fn, 'rb')
     indices = pickle.load(pkl_file)
     pkl_file.close()
@@ -70,8 +68,8 @@ else:
 
 # form semi-supervised data set
 print('Form semi-supervised data for modeling')
-num_sample_used = len(digits.target) if num_sample_used > len(digits.target) else num_sample_used
-num_labeled_points = num_sample_used if num_labeled_points > num_sample_used else num_labeled_points
+num_sample_used = min(len(digits.target), num_sample_used)
+num_labeled_points = min(num_sample_used, num_labeled_points)
 print('Samples to form data: %d labeled & %d unlabeled (%d total)'
       % (num_labeled_points, num_sample_used - num_labeled_points, num_sample_used))
 
@@ -90,7 +88,7 @@ print('\n')
 # build label propagation model
 print('Build label propagation model')
 if 'scikit_algo' == algo_type:
-    print('Propagation algo used: %s' % 'SciKit-learn package')
+    print('Propagation algo used: %s' % 'Scikit-learn package')
     lp_param = dict(prop_algo='LabelSpreading', iter_num=1, gamma=0.25, max_iter=5, trace=True)
     t_start = time()
     lp_model = scikit_algo.iter_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
@@ -113,8 +111,8 @@ elif 'scikit_dlp' == algo_type:
     t_end = time()
 elif 'alp' == algo_type:
     print('Propagation algo used: %s' % 'Active label propagation')
-    lp_param = dict(prop_algo='LabelSpreading', active_iter=5, gamma=0.25, max_iter=5,
-                    n_init_samples=10, n_active_samples=5, trace=True)
+    lp_param = dict(prop_algo='LabelSpreading', active_iter=10, gamma=0.25, max_iter=5,
+                    n_init_samples=10, n_active_samples=10, trace=True)
     t_start = time()
     lp_model = alp.alp_label_propagation(data_x=data_x, data_y_train=data_y_train, data_y_true=data_y,
                                          param_dict=lp_param)
