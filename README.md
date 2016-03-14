@@ -1,4 +1,4 @@
-label_propagation
+Label Propagation
 =================
 
-Solutions for label propagation using (active) semi-supervised learning
+Python code for the solutions of label propagation using (active) semi-supervised learning.
